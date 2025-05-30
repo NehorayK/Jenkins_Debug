@@ -1,19 +1,17 @@
 pipeline {
-  // ---- use your SSH‐based agent ----
   agent { label 'docker-ssh' }
 
   stages {
-    stage('Setup') {
+    stage('Verify Environment') {
       steps {
-        echo 'Installing dependencies…'
+        echo 'Checking that all tools are available…'
         sh '''
           set -e
-          # if your container user has sudo, you can prefix sudo here:
-          # sudo apt-get update
-          apt-get update
-          apt-get install -y python3 python3-pip wget curl
-          pip3 install --upgrade pip
-          pip3 install pylint pyinstaller flask pipenv
+          python3 --version
+          pip --version
+          pyinstaller --version
+          pylint --version
+          flask --version
         '''
       }
     }
@@ -28,18 +26,14 @@ pipeline {
     stage('Build') {
       steps {
         echo 'Building with PyInstaller…'
-        sh '''
-          set -e
-          pyinstaller --onefile app.py
-        '''
+        sh 'pyinstaller --onefile app.py'
       }
     }
 
     stage('Test') {
       steps {
-        echo 'Starting app & hitting endpoints…'
+        echo 'Starting app & testing endpoints…'
         sh '''
-          set -e
           nohup ./dist/app & sleep 5
           curl -f http://localhost:8080
           curl -f http://localhost:8080/jenkins
