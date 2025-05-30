@@ -28,11 +28,15 @@ pipeline {
         echo 'Building with PyInstaller…'
         sh '''
           set -e
-          # ensure that the extracted directory can resolve shared libs
+          # ensure that the extracted bundle can resolve shared libs
           export LD_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu:$LD_LIBRARY_PATH
 
+          # clean up any previous onedir output
+          rm -rf dist
+
           # create a one-dir bundle so the .so lives alongside the exe
-          pyinstaller --clean --log-level=INFO --onedir \
+          # -y (--noconfirm) removes any existing output dirs without prompting
+          pyinstaller --clean --log-level=INFO --onedir -y \
             --add-binary "/usr/lib/aarch64-linux-gnu/libpython3.11.so.1.0:." \
             app.py
         '''
