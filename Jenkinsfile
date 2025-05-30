@@ -28,12 +28,12 @@ pipeline {
         echo 'Building with PyInstaller…'
         sh '''
           set -e
-          # make sure the unpacked binary can load the system’s libpython
-          export LD_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu
+          # Make sure the unpacked bundle can load the shared lib
+          export LD_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu:$LD_LIBRARY_PATH
 
-          # bundle the shared library into the exe under the expected name
+          # Bundle in the *versioned* .so at the root of the unpacked folder
           pyinstaller --onefile \
-            --add-binary "/usr/lib/aarch64-linux-gnu/libpython3.11.so.1.0:libpython3.11.so" \
+            --add-binary "/usr/lib/aarch64-linux-gnu/libpython3.11.so.1.0:." \
             app.py
         '''
       }
