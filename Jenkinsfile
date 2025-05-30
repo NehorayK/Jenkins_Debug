@@ -28,12 +28,12 @@ pipeline {
         echo 'Building with PyInstaller…'
         sh '''
           set -e
-          # Ensure the unpacked bundle can find libpython
+          # ensure that the extracted directory can resolve shared libs
           export LD_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu:$LD_LIBRARY_PATH
 
-          # Bundle the *versioned* .so into the root of the exe as the *un*versioned filename
-          pyinstaller --onefile \
-            --add-binary "/usr/lib/aarch64-linux-gnu/libpython3.11.so.1.0:./libpython3.11.so" \
+          # create a one-dir bundle so the .so lives alongside the exe
+          pyinstaller --clean --log-level=INFO --onedir \
+            --add-binary "/usr/lib/aarch64-linux-gnu/libpython3.11.so.1.0:." \
             app.py
         '''
       }
@@ -44,7 +44,8 @@ pipeline {
         echo 'Starting app & testing endpoints…'
         sh '''
           set -e
-          nohup ./dist/app & sleep 5
+          # run the actual binary from the onedir layout
+          nohup ./dist/app/app & sleep 5
           curl -f http://127.0.0.1:8000
           curl -f http://127.0.0.1:8000/jenkins
         '''
