@@ -38,8 +38,8 @@ pipeline {
         echo 'Starting app & testing endpoints…'
         sh '''
           nohup ./dist/app & sleep 5
-          curl -f http://localhost:8080
-          curl -f http://localhost:8080/jenkins
+          curl -f http://localhost:8000
+          curl -f http://localhost:8000/jenkins
         '''
       }
     }
