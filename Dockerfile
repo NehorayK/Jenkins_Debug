@@ -1,8 +1,8 @@
-# Dockerfile for SSH-based Jenkins agent with pre-baked Python tools
+# Dockerfile for SSH-based Jenkins agent with binutils
 
 FROM debian:bookworm-slim
 
-# 1) Install system deps: Java (for remoting), SSH server, Git, Python + venv support
+# 1) Install Java (for remoting), SSH server, Git, Python & binutils in one RUN
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
       default-jre-headless \
@@ -10,11 +10,12 @@ RUN apt-get update && \
       git \
       python3 \
       python3-venv \
+      binutils \
       wget \
       curl && \
     rm -rf /var/lib/apt/lists/*
 
-# 2) Create a Python venv and install your build tools there
+# 2) Create a Python venv and install PyInstaller, pylint, flask
 RUN python3 -m venv /opt/venv && \
     /opt/venv/bin/pip install --upgrade pip && \
     /opt/venv/bin/pip install pyinstaller pylint flask && \
@@ -23,7 +24,7 @@ RUN python3 -m venv /opt/venv && \
     ln -s /opt/venv/bin/flask      /usr/local/bin/flask      && \
     ln -s /opt/venv/bin/pip        /usr/local/bin/pip
 
-# 3) Set up the jenkins user and its workspace
+# 3) Set up jenkins user & workspace, and create sshd dir
 RUN useradd -m -d /home/jenkins -s /bin/bash jenkins && \
     echo 'jenkins:jenkinspass' | chpasswd && \
     mkdir -p /home/jenkins/agent /home/jenkins/.ssh /var/run/sshd && \
@@ -31,5 +32,4 @@ RUN useradd -m -d /home/jenkins -s /bin/bash jenkins && \
 
 EXPOSE 22
 
-# 4) Launch SSHd
 CMD ["/usr/sbin/sshd","-D"]
