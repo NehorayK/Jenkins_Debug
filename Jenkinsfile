@@ -26,7 +26,10 @@ pipeline {
     stage('Build') {
       steps {
         echo 'Building with PyInstaller…'
-        sh 'pyinstaller --onefile app.py'
+        sh '''
+        export LD_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu
+        pyinstaller --onefile app.py
+        '''
       }
     }
 
